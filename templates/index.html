@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bildsökning i Lager</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        input[type="text"] { width: 100%; padding: 8px; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .error { color: red; margin: 10px 0; }
+        .loading { color: #007bff; margin: 10px 0; }
+        .tags { margin: 20px 0; }
+        .tag { display: inline-block; background: #e0e0e0; padding: 5px 10px; margin: 5px; border-radius: 3px; }
+        .products { margin-top: 20px; }
+        .product { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+        .product h3 { margin-top: 0; }
+        .match-score { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Bildsökning i Lager</h1>
+    
+    <form method="POST" action="/image_search">
+        <div class="form-group">
+            <label for="image-url">Bild-URL:</label>
+            <input type="text" id="image-url" name="image-url" value="{{ image_url }}" placeholder="Ange URL till en bild..." required>
+        </div>
+        <button type="submit">Analysera bild och hitta produkter</button>
+    </form>
+
+    {% if loading %}
+        <div class="loading">Bearbetar bild och söker produkter...</div>
+    {% endif %}
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if tags %}
+        <div class="tags">
+            <h2>Identifierade objekt i bilden:</h2>
+            {% for tag in tags %}
+                <span class="tag">{{ tag.name }} ({{ "%.0f"|format(tag.confidence * 100) }}%)</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if matched_products %}
+        <div class="products">
+            <h2>Matchande produkter ({{ matched_products|length }}):</h2>
+            {% for product in matched_products %}
+                <div class="product">
+                    <h3>{{ product.name }}</h3>
+                    <p>{{ product.description }}</p>
+                    <p>Pris: {{ product.price }} kr</p>
+                    <p class="match-score">Matchning: {{ product.match_score }} poäng</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif tags and not error %}
+        <div class="info">Inga matchande produkter hittades.</div>
+    {% endif %}
+</body>
+</html>
